@@ -19,7 +19,9 @@ public class WebConfig {
                         .allowedOrigins("http://luzdorefugio.zapto.org:4200") // Permitir o Angular
                         .allowedOrigins("https://rarefactive-grace-unfamiliarly.ngrok-free.dev/") // Permitir o Angular
                         .allowedOrigins("https://rarefactive-grace-unfamiliarly.ngrok-free.dev") // Permitir o Angular
-                        .allowedOrigins("http://192.168.1.238:4200") // Permitir o Angular
+                        .allowedOrigins("https://luz-do-refugio-pgzea69oo-luzdorefugios-projects.vercel.app:4200") // Permitir o Angular
+                        .allowedOrigins("https://luz-do-refugio-pgzea69oo-luzdorefugios-projects.vercel.app") // Permitir o Angular
+                        .allowedOrigins("https://luz-do-refugio.vercel.app") // Permitir o Angular
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH");
             }
         };
