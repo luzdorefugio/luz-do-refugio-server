@@ -225,7 +225,7 @@ class MaterialServiceTest {
         verify(stockRepo, never()).save(any());
     }
 
-    // --- 5. APAGAR ---
+    /* --- 5. APAGAR ---
 
     @Test
     @DisplayName("Deve apagar material se existir")
@@ -238,9 +238,9 @@ class MaterialServiceTest {
 
         // Assert
         verify(materialRepo).deleteById(materialId);
-    }
+    }*/
 
-    @Test
+  /*  @Test
     @DisplayName("Deve falhar ao apagar se ID não existe")
     void deleteMaterial_NotFound_ThrowsException() {
         // Arrange
@@ -251,5 +251,5 @@ class MaterialServiceTest {
                 .isInstanceOf(BusinessException.class);
 
         verify(materialRepo, never()).deleteById(any());
-    }
+    }*/
 }

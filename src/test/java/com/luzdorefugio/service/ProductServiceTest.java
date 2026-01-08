@@ -83,7 +83,8 @@ class ProductServiceTest {
         // Arrange
         var recipeItemReq = new CreateProductRequest.ProductRecipeRequest(waxId, new BigDecimal("0.2")); // 200g de cera
         var request = new CreateProductRequest("VELA-LAVANDA", "Vela",
-                new BigDecimal("20"), List.of(recipeItemReq), true);
+                new BigDecimal("20"),"4", 4,"top", "heart",
+                "base", List.of(recipeItemReq),true);
 
         when(materialRepo.findById(waxId)).thenReturn(Optional.of(waxMaterial));
         when(productRepo.save(any(Product.class))).thenAnswer(i -> i.getArgument(0));
@@ -102,7 +103,8 @@ class ProductServiceTest {
     @DisplayName("Update deve falhar se mudar SKU para um já existente")
     void update_DuplicateSku_ThrowsException() {
         // Arrange
-        var request = new CreateProductRequest("SKU-DUPLICADO", "Nome",  BigDecimal.TEN, null, true);
+        var request = new CreateProductRequest("SKU-DUPLICADO", "Nome",  BigDecimal.TEN,"4", 4,"top", "heart",
+                "base",null,true);
 
         when(productRepo.findById(productId)).thenReturn(Optional.of(product));
         when(productRepo.existsBySku("SKU-DUPLICADO")).thenReturn(true);
