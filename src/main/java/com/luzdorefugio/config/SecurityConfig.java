@@ -11,32 +11,89 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
     private final JwtAuthenticationFilter jwtAuthFilter;
-    private final AuthenticationProvider authenticationProvider; // Injetado do ApplicationConfig
-    private final CorsConfigurationSource corsConfigurationSource;
+    private final AuthenticationProvider authenticationProvider;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // 1. Desativar CSRF (não é necessário para APIs REST com JWT)
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource))
+
+                // 2. Configurar CORS (Aqui ligamos ao método lá de baixo)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                // 3. Definir quem pode entrar onde
                 .authorizeHttpRequests(auth -> auth
-                        // Rotas Públicas
-                        .requestMatchers("/api/shop/**", "/api/auth/**","/api/orders").permitAll()
-                        // Rotas Privadas
+                        // Rotas Públicas (Loja, Login, Registo, Criar Orders)
+                        .requestMatchers("/api/shop/**", "/api/auth/**", "/api/orders").permitAll()
+
+                        // Rotas de Admin (Requer autenticação)
                         .requestMatchers("/api/admin/**").authenticated()
+
+                        // Qualquer outra coisa precisa de login
                         .anyRequest().authenticated()
                 )
+
+                // 4. Sessão Stateless (Não guardamos sessão no servidor, usamos Token)
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider) // Usa o Bean injetado
+
+                // 5. Configurar os Providers de Autenticação
+                .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    // --- AQUI ESTÁ A CONFIGURAÇÃO DE CORS CENTRALIZADA ---
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        // Lista de sites permitidos (Localhost + Produção + Render + Ngrok)
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:4200",
+                "http://localhost",
+                "https://luz-do-refugio.vercel.app",
+                "https://luz-do-refugio-pgzea69oo-luzdorefugios-projects.vercel.app",
+                "https://luz-do-refugio-server.onrender.com",
+                "http://luzdorefugio.zapto.org",
+                "http://luzdorefugio.zapto.org:4200"
+                // Podes adicionar mais aqui se precisares
+        ));
+
+        // Métodos HTTP permitidos
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+
+        // Headers permitidos (Importante para o Login funcionar)
+        configuration.setAllowedHeaders(Arrays.asList(
+                "Authorization",
+                "Content-Type",
+                "X-Requested-With",
+                "Accept",
+                "Origin",
+                "Access-Control-Request-Method",
+                "Access-Control-Request-Headers"
+        ));
+
+        // Permitir envio de credenciais (cookies ou auth headers)
+        configuration.setAllowCredentials(true);
+
+        // Aplicar a todas as rotas da API
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }
