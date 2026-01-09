@@ -62,23 +62,19 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Lista de sites permitidos (Localhost + Produção + Render + Ngrok)
-        configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:4200",
-                "http://localhost",
-                "https://luz-do-refugio.vercel.app",
-                "https://luz-do-refugio-lqzlorkcb.vercel.app",
-                "https://luz-do-refugio-*.vercel.app",
-                "https://luz-do-refugio-server.onrender.com",
-                "http://luzdorefugio.zapto.org",
-                "http://luzdorefugio.zapto.org:4200"
-                // Podes adicionar mais aqui se precisares
+        // --- MUDANÇA CRÍTICA AQUI ---
+        // Apaguei o setAllowedOrigins e uso APENAS o setAllowedOriginPatterns
+        // Isto permite usar o * para apanhar todos os links do Vercel
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+                "http://localhost:4200",               // O teu PC
+                "http://localhost",                    // O teu PC (alternativa)
+                "https://luz-do-refugio.vercel.app",   // Produção
+                "https://luz-do-refugio-*.vercel.app", // <--- AGORA O * JÁ FUNCIONA
+                "https://*-luzdorefugios-projects.vercel.app" // <--- Dica extra: Apanha os links da tua equipa/projeto específico
         ));
 
-        // Métodos HTTP permitidos
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 
-        // Headers permitidos (Importante para o Login funcionar)
         configuration.setAllowedHeaders(Arrays.asList(
                 "Authorization",
                 "Content-Type",
@@ -89,10 +85,8 @@ public class SecurityConfig {
                 "Access-Control-Request-Headers"
         ));
 
-        // Permitir envio de credenciais (cookies ou auth headers)
         configuration.setAllowCredentials(true);
 
-        // Aplicar a todas as rotas da API
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
