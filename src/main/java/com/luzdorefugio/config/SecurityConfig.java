@@ -67,7 +67,7 @@ public class SecurityConfig {
                 "http://localhost:4200",
                 "http://localhost",
                 "https://luz-do-refugio.vercel.app",
-                "https://luz-do-refugio-pgzea69oo-luzdorefugios-projects.vercel.app",
+                "https://luz-do-refugio-*.vercel.app",
                 "https://luz-do-refugio-server.onrender.com",
                 "http://luzdorefugio.zapto.org",
                 "http://luzdorefugio.zapto.org:4200"
