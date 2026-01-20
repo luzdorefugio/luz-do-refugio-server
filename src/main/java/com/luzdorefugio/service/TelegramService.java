@@ -1,6 +1,7 @@
 package com.luzdorefugio.service;
 
 import org.jspecify.annotations.NonNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -9,7 +10,8 @@ import java.util.Map;
 
 @Service
 public class TelegramService {
-    private final String BOT_TOKEN = "8510622541:AAGSx1_VgMk7P3h0t9mYhIRyvHX85EmgP9M";
+    @Value("${app.bot.token}")
+    private String BOT_TOKEN;
     private final String CHAT_ID = "-5151995351";
 
     public void enviarAlertaVenda(String idEncomenda, Double valor, String cliente) {
