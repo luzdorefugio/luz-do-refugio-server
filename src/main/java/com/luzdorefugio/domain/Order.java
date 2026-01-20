@@ -1,5 +1,6 @@
 package com.luzdorefugio.domain;
 
+import com.luzdorefugio.domain.base.Auditable;
 import com.luzdorefugio.domain.enums.OrderChannel;
 import com.luzdorefugio.domain.enums.OrderStatus;
 import com.luzdorefugio.security.StringEncryptor;
@@ -22,12 +23,10 @@ import java.util.UUID;
 @AllArgsConstructor
 @Entity
 @Table(name = "orders")
-public class Order {
+public class Order extends Auditable {
     @Id
     @UuidGenerator
     private UUID id;
-    @CreationTimestamp
-    private LocalDateTime createdAt;
     @Enumerated(EnumType.STRING)
     @Column(name = "channel")
     private OrderChannel channel;
@@ -47,6 +46,14 @@ public class Order {
     private BigDecimal shippingCost;
     private String appliedPromotionCode;
     private BigDecimal discountAmount;
+    @Convert(converter = StringEncryptor.class)
+    private String billingAddress;
+    private String billingCity;
+    private String billingZipCode;
+    private Boolean isGift;
+    private String giftMessage;
+    private String giftFromName;
+    private String giftToName;
     @Builder.Default
     private boolean invoiceIssued = false;
 

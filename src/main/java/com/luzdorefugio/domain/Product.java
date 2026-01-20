@@ -25,6 +25,9 @@ public class Product extends Auditable {
     private String name;
     @Column(nullable = false)
     private String description;
+    private String cardMessage;
+    private String cardColorDesc;
+    private Integer weightGrams;
     @Column(name = "price", precision = 19, scale = 2)
     private BigDecimal price;
     @Column(name = "estimated_cost", precision = 19, scale = 4)
@@ -37,6 +40,8 @@ public class Product extends Auditable {
     private boolean activeShop;
     @Column(nullable = false)
     private boolean active;
+    @Column(nullable = false)
+    private boolean featured;
     @Builder.Default
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ProductRecipe> recipe = new ArrayList<>();

@@ -142,10 +142,6 @@ public class MaterialService {
 
         stock.setQuantityOnHand(stock.getQuantityOnHand().add(request.quantity()));
         stockRepo.save(stock);
-
-        // 3. Registar Movimento de Stock (Histórico)
-        // (Opcional por agora, mas idealmente criarias um StockMovement do tipo INBOUND)
-
         // 4. Registar a Saída de Dinheiro
         String desc = String.format("Compra de %s %s de %s",
                 request.quantity(),

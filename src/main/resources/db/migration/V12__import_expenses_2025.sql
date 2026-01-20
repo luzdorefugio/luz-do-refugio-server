@@ -1,3 +1,8 @@
+-- JANEIRO 2026
+
+INSERT INTO financial_transactions (id, type, category, amount, description, transaction_date, created_at, created_by) VALUES (gen_random_uuid(), 'EXPENSE', 'MATERIAL_PURCHASE', 1.23, 'Lacre Bordeaux - 12', '2026-01-09', CURRENT_TIMESTAMP, 'MIGRATION');
+INSERT INTO financial_transactions (id, type, category, amount, description, transaction_date, created_at, created_by) VALUES (gen_random_uuid(), 'EXPENSE', 'MATERIAL_PURCHASE', 2.95, 'Corante rosa orquídea', '2026-01-06', CURRENT_TIMESTAMP, 'MIGRATION');
+INSERT INTO financial_transactions (id, type, category, amount, description, transaction_date, created_at, created_by) VALUES (gen_random_uuid(), 'EXPENSE', 'MATERIAL_PURCHASE', 98.85, 'kit para sabão', '2026-01-06', CURRENT_TIMESTAMP, 'MIGRATION');
 -- DEZEMBRO 2025
 INSERT INTO financial_transactions (id, type, category, amount, description, transaction_date, created_at, created_by) VALUES (gen_random_uuid(), 'INCOME', 'PRODUCT_SALE', 7, 'Vela da foz', '2025-12-31', CURRENT_TIMESTAMP, 'MIGRATION');
 INSERT INTO financial_transactions (id, type, category, amount, description, transaction_date, created_at, created_by) VALUES (gen_random_uuid(), 'INCOME', 'PRODUCT_SALE', 5.0, 'Pistacho royal', '2025-12-31', CURRENT_TIMESTAMP, 'MIGRATION');

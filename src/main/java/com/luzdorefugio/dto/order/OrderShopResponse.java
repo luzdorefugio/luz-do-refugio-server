@@ -1,10 +1,8 @@
 package com.luzdorefugio.dto.order;
 
-import com.luzdorefugio.domain.enums.OrderChannel;
 import com.luzdorefugio.domain.enums.OrderStatus;
 import lombok.Builder;
 import lombok.Data;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -12,31 +10,18 @@ import java.util.UUID;
 
 @Data
 @Builder
-public class OrderFullResponse {
+public class OrderShopResponse {
     private UUID id;
     private Instant createdAt;
     private String customerName;
-    private String customerEmail;
-    private String customerPhone;
-    private String customerNif;
-    private String address;
     private String city;
     private String zipCode;
     private BigDecimal totalAmount;
+    private OrderStatus status;
     private String shippingMethod;
     private BigDecimal shippingCost;
     private String appliedPromotionCode;
     private BigDecimal discountAmount;
-    private String billingAddress;
-    private String billingCity;
-    private String billingZipCode;
-    private Boolean isGift;
-    private String giftMessage;
-    private String giftFromName;
-    private String giftToName;
-    private Boolean giftHidePrice;
-    private OrderStatus status;
-    private OrderChannel channel;
     private boolean invoiceIssued;
     private List<OrderItemResponse> items;
     private String paymentMethod;

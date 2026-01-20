@@ -31,7 +31,7 @@ public class AuthenticationService {
                 .build();
         repository.save(user);
         var jwtToken = jwtService.generateToken(user);
-        return new AuthResponse(jwtToken, user.getRole().name(), user.getName(),
+        return new AuthResponse(jwtToken, user.getRole().name(), user.getName(), user.getEmail(),
                 null, null, null, null, null);
     }
 
@@ -41,7 +41,7 @@ public class AuthenticationService {
         );
         var user = repository.findByEmail(request.email()).orElseThrow();
         var jwtToken = jwtService.generateToken(user);
-        return new AuthResponse(jwtToken, user.getRole().name(), user.getName(), user.getPhone(), user.getNif(),
+        return new AuthResponse(jwtToken, user.getRole().name(), user.getName(), user.getEmail(), user.getPhone(), user.getNif(),
                 user.getAddress(),user.getCity(), user.getZipCode());
     }
 
@@ -54,7 +54,7 @@ public class AuthenticationService {
         if (request.city() != null) user.setCity(request.city());
         if (request.zipCode() != null) user.setZipCode(request.zipCode());
         user = repository.save(user);
-        return new AuthResponse(null, user.getRole().name(), user.getName(), user.getPhone(), user.getNif(),
+        return new AuthResponse(null, user.getRole().name(), user.getName(), user.getEmail(), user.getPhone(), user.getNif(),
                 user.getAddress(),user.getCity(), user.getZipCode());
     }
 }

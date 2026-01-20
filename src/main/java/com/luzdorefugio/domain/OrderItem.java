@@ -18,19 +18,16 @@ import java.util.UUID;
 @Entity
 @Table(name = "order_items")
 public class OrderItem {
-
     @Id
     @UuidGenerator
     private UUID id;
-
-    // Relação com a Encomenda Principal
     @ManyToOne
     @JoinColumn(name = "order_id")
-    @JsonIgnore // Para evitar loop infinito no JSON
+    @JsonIgnore
     private Order order;
-
-    private UUID productId;
-    private String productName;
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private Product product;
     private Integer quantity;
-    private BigDecimal price; // Preço unitário
+    private BigDecimal price;
 }

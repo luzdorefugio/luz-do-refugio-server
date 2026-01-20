@@ -6,10 +6,7 @@ import com.luzdorefugio.domain.enums.MaterialType;
 import com.luzdorefugio.domain.enums.MovementType;
 import com.luzdorefugio.domain.enums.OrderStatus;
 import com.luzdorefugio.domain.enums.SpecialCondition;
-import com.luzdorefugio.dto.order.OrderFullResponse;
-import com.luzdorefugio.dto.order.OrderItemResponse;
-import com.luzdorefugio.dto.order.OrderResponse;
-import com.luzdorefugio.dto.order.OrderRequest;
+import com.luzdorefugio.dto.order.*;
 import com.luzdorefugio.exception.BusinessException;
 import com.luzdorefugio.exception.ResourceNotFoundException;
 import com.luzdorefugio.repository.OrderRepository;
@@ -40,11 +37,18 @@ public class OrderService {
     private final PromotionService promotionService;
     private final NotificationService notificationService;
     private final FinancialService financialService;
+    private final TelegramService telegramService;
 
     public OrderFullResponse findById(UUID id) {
         Order order = repository.findById(id)
                 .orElseThrow(() -> new BusinessException("Order not found with ID: " + id));
         return mapToResponseFull(order);
+    }
+
+    public OrderShopResponse findByIdShop(UUID id) {
+        Order order = repository.findById(id)
+                .orElseThrow(() -> new BusinessException("Order not found with ID: " + id));
+        return mapToResponseShop(order);
     }
 
     public OrderResponse createOrderShop(OrderRequest request) {
@@ -55,62 +59,112 @@ public class OrderService {
 
     // 1. CRIAR ENCOMENDA
     public OrderResponse createOrder(OrderRequest request) {
-        var order = Order.builder()
-                .customerName(request.getCustomer().getName())
+
+        // 2. Extrair Moradas (Null Safety é importante)
+        var shippingAddr = request.getCustomer().getShippingAddress();
+        var billingAddr = request.getCustomer().getBillingAddress();
+
+        // Fallback: Se billing vier null, usa shipping (embora o frontend já trate disto)
+        if (billingAddr == null) billingAddr = shippingAddr;
+
+        // 3. Builder
+        var orderBuilder = Order.builder()
+                // --- Identificação do Cliente ---
+                .customerName(request.getCustomer().getFullName())
                 .customerEmail(request.getCustomer().getEmail())
-                .address(request.getCustomer().getAddress())
-                .city(request.getCustomer().getCity())
-                .zipCode(request.getCustomer().getZipCode())
                 .customerPhone(request.getCustomer().getPhone())
                 .customerNif(request.getCustomer().getNif())
-                .paymentMethod(request.getPayment().getPaymentMethod())
-                .shippingMethod(request.getShippingMethod()).shippingCost(request.getShippingCost())
+
+                // --- Morada de ENVIO (Física) ---
+                .address(shippingAddr.getStreet())
+                .city(shippingAddr.getCity())
+                .zipCode(shippingAddr.getZip())
+                // .country(shippingAddr.getCountry()) // Se tiveres coluna country
+
+                // --- Morada de FATURAÇÃO (Fiscal) - NOVOS CAMPOS ---
+                .billingAddress(billingAddr.getStreet())
+                .billingCity(billingAddr.getCity())
+                .billingZipCode(billingAddr.getZip())
+
+                // --- Pagamento e Logística ---
+                .paymentMethod(request.getPayment().getMethod())
+                .shippingMethod(request.getShippingMethod())
+                .shippingCost(request.getShippingCost())
                 .totalAmount(request.getTotal())
-                .appliedPromotionCode(request.getAppliedPromotionCode()).discountAmount(request.getDiscountAmount())
-                .channel(request.getChannel()).status(OrderStatus.PENDING).build();
+                .appliedPromotionCode(request.getAppliedPromotionCode())
+                .discountAmount(request.getDiscountAmount())
+                .channel(request.getChannel())
+                .status(OrderStatus.PENDING);
+
+        // 4. Lógica de GIFT (Só preenche se o objeto existir)
+        if (request.getGiftDetails() != null && Boolean.TRUE.equals(request.getGiftDetails().getIsGift())) {
+            orderBuilder
+                    .isGift(true)
+                    .giftFromName(request.getGiftDetails().getFromName())
+                    .giftToName(request.getGiftDetails().getToName())
+                    .giftMessage(request.getGiftDetails().getMessage());
+        } else {
+            orderBuilder.isGift(false);
+        }
+
+        Order order = orderBuilder.build();
+
+        // 5. Processamento de Items (Mantém-se praticamente igual)
         List<OrderItem> items = request.getItems().stream().map(itemDto -> {
+            // Lógica de "Sem Caixa" (Se ainda usares)
             if (Boolean.TRUE.equals(request.getWithoutBox())) {
                 returnPackagingToStock(itemDto.getProductId(), itemDto.getQuantity());
             }
-            // A. Buscar o Produto na BD
+
+            // Buscar Produto e Validar Stock
             Product product = productRepo.findById(itemDto.getProductId())
                     .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado ID: " + itemDto.getProductId()));
+
             ProductStock stock = stockRepo.findByProductId(itemDto.getProductId())
-                    .orElseThrow(() -> new BusinessException("Não existe stock registado para este produto. Fabrique primeiro!"));
+                    .orElseThrow(() -> new BusinessException("Não existe stock registado para este produto."));
+
             if (stock.getQuantityOnHand() < itemDto.getQuantity()) {
-                throw new BusinessException("Stock insuficiente para '" + product.getName() +
-                        "'. Tem: " + stock.getQuantityOnHand() + ", Pedido: " + itemDto.getQuantity());
+                throw new BusinessException("Stock insuficiente para '" + product.getName() + "'.");
             }
+
+            // Atualizar Stock
             stock.setQuantityOnHand(stock.getQuantityOnHand() - itemDto.getQuantity());
             stockRepo.save(stock);
 
-            // D. Criar o OrderItem
             return OrderItem.builder()
                     .order(order)
-                    .productId(product.getId())
-                    .productName(product.getName())
+                    .product(product)
                     .price(itemDto.getPrice())
                     .quantity(itemDto.getQuantity())
                     .build();
 
         }).collect(Collectors.toList());
+
         order.setItems(items);
         Order savedOrder = repository.save(order);
+
+        // 6. Pós-Venda (Promoções, Alertas, Emails)
         if (order.getAppliedPromotionCode() != null && !order.getAppliedPromotionCode().isEmpty()) {
             promotionService.incrementUsage(order.getAppliedPromotionCode());
         }
-        if (OrderStatus.DELIVERED == request.getStatus()) {
-            this.updateStatus(order.getId(), request.getStatus().name());
-        }
-        try {
-            notificationService.sendOrderConfirmation(
+
+        // Telegram - Se for gift, podes querer avisar no Telegram que é para oferta!
+        new Thread(() -> {
+            String alertMsg = savedOrder.getIsGift() ? "🎁 NOVA OFERTA VENDIDA!" : "NOVA VENDA!";
+            telegramService.enviarAlertaVenda(
+                    alertMsg + " ID: " + savedOrder.getId().toString(),
+                    savedOrder.getTotalAmount().doubleValue(),
+                    savedOrder.getCustomerName()
+            );
+        }).start();
+
+        // Email de Confirmação
+        notificationService.sendOrderConfirmation(
                 savedOrder.getCustomerEmail(),
                 savedOrder.getCustomerName(),
                 savedOrder.getId(),
                 savedOrder.getTotalAmount());
-        } catch (Exception e) {
-            logger.error("Erro ao enviar email de estado: ",e);
-        }
+
         return mapToResponse(savedOrder);
     }
 
@@ -205,6 +259,15 @@ public class OrderService {
         return mapToResponse(updated);
     }
 
+    public Long countByStatus() {
+        return repository.countByStatus(OrderStatus.PENDING);
+    }
+
+    public List<OrderResponse> getPendingOrdersList() {
+        return repository.findByStatusOrderByCreatedAtDesc(OrderStatus.PENDING)
+                .stream().map(this::mapToResponse).collect(Collectors.toList());
+    }
+
     public BigDecimal calculateDiscount(Order order, Promotion promo) {
 
         // 1. Validações Básicas
@@ -217,14 +280,12 @@ public class OrderService {
 
         BigDecimal discount = BigDecimal.ZERO;
         //BigDecimal subTotal = order.getItemsTotal(); // Soma dos produtos
-
         // 2. Lógica por Tipo
         switch (promo.getDiscountType()) {
             case FREE_SHIPPING:
                 // O desconto é igual ao valor dos portes
                 //discount = order.getShippingCost();
                 break;
-
             case FIXED_AMOUNT:
                 discount = promo.getDiscountValue();
                 break;
@@ -234,10 +295,7 @@ public class OrderService {
                 //        .divide(new BigDecimal(100));
                 break;
         }
-        // 3. Lógica Especial (Ex: 2 por 1)
         if (promo.getSpecialCondition() == SpecialCondition.BUY_2_PAY_1) {
-            // Lógica complexa: Encontrar o item mais barato e oferecer esse valor
-            // (Requer iterar sobre os items da encomenda)
             BigDecimal cheapestItem = order.getItems().stream()
                     .map(OrderItem::getPrice)
                     .min(BigDecimal::compareTo)
@@ -256,7 +314,10 @@ public class OrderService {
 
     private void registerStockMovement(Order order, MovementType type, String reason) {
         for (OrderItem item : order.getItems()) {
-            ProductStock productStock = stockRepo.findByProductId(item.getProductId())
+            if (item.getProduct() == null) {
+                throw new BusinessException("Produto não encontrado");
+            }
+            ProductStock productStock = stockRepo.findByProductId(item.getProduct().getId())
                     .orElseThrow(() -> new BusinessException("Produto não encontrado"));
             if (MovementType.RETURN.equals(type)) {
                 productStock.setQuantityOnHand(productStock.getQuantityOnHand() + item.getQuantity());
@@ -302,18 +363,47 @@ public class OrderService {
     private OrderResponse mapToResponse(Order order) {
         return OrderResponse.builder()
                 .id(order.getId())
-                .createdAt(order.getCreatedAt())
                 .customerName(order.getCustomerName())
+                .createdAt(order.getCreatedAt())
                 .customerEmail(order.getCustomerEmail())
                 .totalAmount(order.getTotalAmount())
                 .status(order.getStatus())
                 .paymentMethod(order.getPaymentMethod())
+                .shippingMethod(order.getShippingMethod())
+                .shippingCost(order.getShippingCost())
+                .appliedPromotionCode(order.getAppliedPromotionCode())
+                .discountAmount(order.getDiscountAmount())
                 .invoiceIssued(order.isInvoiceIssued())
                 .items(order.getItems().stream().map(item ->
                         OrderItemResponse.builder()
-                                .productName(item.getProductName())
                                 .quantity(item.getQuantity())
                                 .price(item.getPrice())
+                                .sku(item.getProduct().getSku())
+                                .build()
+                ).collect(Collectors.toList()))
+                .build();
+    }
+
+    private OrderShopResponse mapToResponseShop(Order order) {
+        return OrderShopResponse.builder()
+                .id(order.getId())
+                .createdAt(order.getCreatedAt())
+                .customerName(order.getCustomerName())
+                .totalAmount(order.getTotalAmount())
+                .status(order.getStatus())
+                .city(order.getCity())
+                .zipCode(order.getZipCode())
+                .paymentMethod(order.getPaymentMethod())
+                .shippingMethod(order.getShippingMethod())
+                .shippingCost(order.getShippingCost())
+                .discountAmount(order.getDiscountAmount())
+                .appliedPromotionCode(order.getAppliedPromotionCode())
+                .invoiceIssued(order.isInvoiceIssued())
+                .items(order.getItems().stream().map(item ->
+                        OrderItemResponse.builder()
+                                .quantity(item.getQuantity())
+                                .price(item.getPrice())
+                                .sku(item.getProduct().getSku())
                                 .build()
                 ).collect(Collectors.toList()))
                 .build();
@@ -328,6 +418,10 @@ public class OrderService {
                 .customerNif(order.getCustomerNif())
                 .customerPhone(order.getCustomerPhone())
                 .totalAmount(order.getTotalAmount())
+                .shippingMethod(order.getShippingMethod())
+                .shippingCost(order.getShippingCost())
+                .appliedPromotionCode(order.getAppliedPromotionCode())
+                .discountAmount(order.getDiscountAmount())
                 .status(order.getStatus())
                 .address(order.getAddress())
                 .city(order.getCity())
@@ -335,9 +429,15 @@ public class OrderService {
                 .paymentMethod(order.getPaymentMethod())
                 .channel(order.getChannel())
                 .invoiceIssued(order.isInvoiceIssued())
+                .isGift(order.getIsGift())
+                .giftFromName(order.getGiftFromName())
+                .giftToName(order.getGiftToName())
+                .giftMessage(order.getGiftMessage())
                 .items(order.getItems().stream().map(item ->
                         OrderItemResponse.builder()
-                                .productName(item.getProductName())
+                                .productId(item.getProduct().getId())
+                                .productName(item.getProduct().getName())
+                                .sku(item.getProduct().getSku())
                                 .quantity(item.getQuantity())
                                 .price(item.getPrice())
                                 .build()

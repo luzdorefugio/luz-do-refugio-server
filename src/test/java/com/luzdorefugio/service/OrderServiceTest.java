@@ -3,7 +3,6 @@ package com.luzdorefugio.service;
 import com.luzdorefugio.domain.*;
 import com.luzdorefugio.domain.enums.OrderChannel;
 import com.luzdorefugio.domain.enums.OrderStatus;
-import com.luzdorefugio.dto.order.CustomerData;
 import com.luzdorefugio.dto.order.OrderRequest;
 import com.luzdorefugio.dto.order.OrderResponse;
 import com.luzdorefugio.exception.BusinessException;
@@ -76,12 +75,12 @@ class OrderServiceTest {
                 .build();
 
         // 3. Setup Request (Dados de entrada)
-        CustomerData customer = new CustomerData();
-        customer.setName("João Silva");
+        OrderRequest.CustomerData customer = new OrderRequest.CustomerData();
+        customer.setFullName("João Silva");
         customer.setEmail("joao@email.com");
 
         OrderRequest.PaymentData payment = new OrderRequest.PaymentData();
-        payment.setPaymentMethod("CREDIT_CARD");
+        payment.setMethod("CREDIT_CARD");
 
         OrderRequest.OrderItemDto itemDto = new OrderRequest.OrderItemDto();
         itemDto.setProductId(productId);

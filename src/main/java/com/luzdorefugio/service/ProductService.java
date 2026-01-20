@@ -190,6 +190,8 @@ public class ProductService {
                     product.getSku(),
                     product.getName(),
                     product.getDescription(),
+                    product.getCardMessage(),
+                    product.getCardColorDesc(),
                     product.getPrice(),
                     maxProduction,realStock,
                     recipeDTOs,
@@ -208,6 +210,8 @@ public class ProductService {
                     product.getSku(),
                     product.getName(),
                     product.getDescription(),
+                    product.getCardMessage(),
+                    product.getCardColorDesc(),
                     product.getPrice(),
                     maxProduction,realStock,
                     recipeDTOs,
@@ -226,13 +230,9 @@ public class ProductService {
         int stock = productStockRepo.findByProductId(product.getId())
                 .map(ProductStock::getQuantityOnHand).orElse(0);
         return new ShopProductResponse(
-                product.getId(),
-                product.getSku(),
-                product.getName(),
-                product.getDescription(),
-                product.getPrice(),
-                stock,
-                product.isActive()
+                product.getId(), product.getSku(),
+                product.getName(), product.getDescription(), product.getPrice(),
+                stock, product.isFeatured(), product.isActive()
         );
     }
 

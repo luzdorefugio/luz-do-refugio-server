@@ -1,6 +1,7 @@
 package com.luzdorefugio.repository;
 
 import com.luzdorefugio.domain.Order;
+import com.luzdorefugio.domain.enums.OrderStatus;
 import com.luzdorefugio.dto.admin.SalesByChannelDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -21,4 +22,8 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
         GROUP BY o.channel
     """)
     List<SalesByChannelDTO> getSalesByChannel();
+
+    List<Order> findByStatusOrderByCreatedAtDesc(OrderStatus status);
+
+    long countByStatus(OrderStatus status);
 }

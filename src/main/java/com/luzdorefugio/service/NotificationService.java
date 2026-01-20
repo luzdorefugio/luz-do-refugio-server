@@ -63,8 +63,8 @@ public class NotificationService {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(FROM_EMAIL);
             message.setTo(toEmail);
+            String linkRastreio = "https://luzdorefugio.pt/loja/rastreio/" + orderId.toString();
             message.setSubject("Luz do Refúgio - Encomenda Recebida #" + orderId.toString().substring(0, 8));
-
             message.setText(String.format("""
                 Olá %s,
                 
@@ -74,12 +74,11 @@ public class NotificationService {
                 Se escolheste MBWAY ou Transferência, verifica os dados de pagamento na tua área de cliente ou na página de sucesso da compra.
                 A tua encomenda será processada assim que confirmarmos o pagamento.
                 
-                Podes acompanhar o estado aqui: https://luzdorefugio.pt/loja/minha-conta
+                Podes acompanhar o estado aqui: %s
                 
                 Com carinho,
                 A Equipa Luz do Refúgio
-                """, customerName, orderId, total));
-
+                """, customerName, orderId, total, linkRastreio));
             mailSender.send(message);
             logger.info("Email de confirmação enviado para {}", toEmail);
         } catch (Exception e) {

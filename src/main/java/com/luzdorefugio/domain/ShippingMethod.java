@@ -17,6 +17,9 @@ public class ShippingMethod {
     private String name;
     private String description;
     private BigDecimal price;
+    private Integer minWeightGrams;
+    private Integer maxWeightGrams;
+    private BigDecimal freeShippingThreshold;
     private boolean active = true;
     @Column
     private Integer displayOrder;

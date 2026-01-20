@@ -10,11 +10,15 @@ CREATE TABLE products (
     top_note VARCHAR(255),
     heart_note VARCHAR(255),
     base_note VARCHAR(255),
+    card_message VARCHAR(255),
+    card_color_desc VARCHAR(255),
+    weight_grams int,
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     updated_at TIMESTAMP WITHOUT TIME ZONE,
     created_by VARCHAR(100),
     last_modified_by VARCHAR(100),
     active_shop BOOLEAN DEFAULT false,
+    featured BOOLEAN DEFAULT false,
     active BOOLEAN DEFAULT true
 );
 

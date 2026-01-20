@@ -11,6 +11,8 @@ public record AdminProductResponse(
         String sku,
         String name,
         String description,
+        String cardMessage,
+        String cardColorDesc,
         BigDecimal price,
         int maxProduction,
         int stock,

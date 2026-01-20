@@ -67,6 +67,7 @@ public class SecurityConfig {
         // Isto permite usar o * para apanhar todos os links do Vercel
         configuration.setAllowedOriginPatterns(Arrays.asList(
                 "http://localhost:4200",               // O teu PC
+                "http://192.168.1.238:4200",               // O teu PC
                 "http://localhost",                    // O teu PC (alternativa)
                 "https://luz-do-refugio.vercel.app",   // Produção
                 "https://luz-do-refugio-*.vercel.app", // <--- AGORA O * JÁ FUNCIONA

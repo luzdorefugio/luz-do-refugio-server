@@ -4,11 +4,12 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 public record ShopProductResponse(
-        UUID id,
-        String sku,
-        String name,
-        String description,
-        BigDecimal salePrice,
-        int stock,
-        boolean active
+    UUID id,
+    String sku,
+    String name,
+    String description,
+    BigDecimal salePrice,
+    int stock,
+    boolean featured,
+    boolean active
 ) {}
