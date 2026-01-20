@@ -68,7 +68,8 @@ public class SecurityConfig {
         configuration.setAllowedOriginPatterns(Arrays.asList(
                 "http://localhost:4200",               // O teu PC
                 "http://192.168.1.238:4200",               // O teu PC
-                "http://localhost",                    // O teu PC (alternativa)
+                "https://luzdorefugio.pt",                    // O teu PC (alternativa)
+                "https://www.luzdorefugio.pt",                    // O teu PC (alternativa)
                 "https://luz-do-refugio.vercel.app",   // Produção
                 "https://luz-do-refugio-*.vercel.app", // <--- AGORA O * JÁ FUNCIONA
                 "https://*-luzdorefugios-projects.vercel.app" // <--- Dica extra: Apanha os links da tua equipa/projeto específico
