@@ -232,7 +232,7 @@ public class ProductService {
         return new ShopProductResponse(
                 product.getId(), product.getSku(),
                 product.getName(), product.getDescription(), product.getPrice(),
-                stock, product.isFeatured(), product.isActive()
+                stock, product.getWeightGrams(), product.isFeatured(), product.isActive()
         );
     }
 

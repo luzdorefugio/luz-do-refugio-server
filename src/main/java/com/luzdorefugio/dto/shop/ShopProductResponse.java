@@ -10,6 +10,7 @@ public record ShopProductResponse(
     String description,
     BigDecimal salePrice,
     int stock,
+    int weightGrams,
     boolean featured,
     boolean active
 ) {}

@@ -18,8 +18,8 @@ CREATE TABLE shipping_methods (
 INSERT INTO shipping_methods
 (id, name, description, price, display_order, active, min_weight_grams, max_weight_grams, free_shipping_threshold)
 VALUES
-    (gen_random_uuid(), 'Correio Registado (100g-500g)', '3-5 dias úteis', 5.04, 1, true, 100, 500, 50.00),
-    (gen_random_uuid(), 'Correio Registado (501g-2000g)', '3-5 dias úteis', 8.34, 1, true, 501, 2000, 50.00),
+    (gen_random_uuid(), 'Correio Registado (100g-500g)', '3-5 dias úteis', 5.40, 1, true, 100, 500, 50.00),
+    (gen_random_uuid(), 'Correio Registado (501g-2000g)', '3-5 dias úteis', 8.93, 1, true, 501, 2000, 50.00),
     (gen_random_uuid(), 'Correio Registado (Volume)', '3-5 dias úteis', 15.00, 1, true, 2001, 10000, 100.00),
-    (gen_random_uuid(), 'Envio Urgente', 'Entrega 24h', 8.15, 2, true, 0, 999999, NULL),
+    (gen_random_uuid(), 'Envio Urgente', 'Entrega 24h (nacional)', 8.15, 2, true, 0, 999999, NULL),
     (gen_random_uuid(), 'Levantar na sede', 'Gratuito', 0.00, 3, true, 0, 999999, NULL);
