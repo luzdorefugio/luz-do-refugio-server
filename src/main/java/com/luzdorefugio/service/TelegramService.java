@@ -12,7 +12,6 @@ import java.util.Map;
 public class TelegramService {
     @Value("${app.bot.token}")
     private String BOT_TOKEN;
-    private final String CHAT_ID = "-5151995351";
 
     public void enviarAlertaVenda(String idEncomenda, Double valor, String cliente) {
         String url = "https://api.telegram.org/bot" + BOT_TOKEN + "/sendMessage";
@@ -36,6 +35,7 @@ public class TelegramService {
                 cliente, valor, idEncomenda.substring(0, 8)
         );
         Map<String, Object> body = new HashMap<>();
+        String CHAT_ID = "-5151995351";
         body.put("chat_id", CHAT_ID);
         body.put("text", texto);
         body.put("parse_mode", "Markdown"); // Para ficar a negrito

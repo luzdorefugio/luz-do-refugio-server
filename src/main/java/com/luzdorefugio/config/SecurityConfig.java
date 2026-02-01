@@ -16,7 +16,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -68,6 +67,7 @@ public class SecurityConfig {
         configuration.setAllowedOriginPatterns(Arrays.asList(
                 "http://localhost:4200",               // O teu PC
                 "http://192.168.1.238:4200",               // O teu PC
+                "http://192.168.1.239:4200",               // O teu PC
                 "https://luzdorefugio.pt",                    // O teu PC (alternativa)
                 "https://www.luzdorefugio.pt",                    // O teu PC (alternativa)
                 "https://luz-do-refugio.vercel.app",   // Produção

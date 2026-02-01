@@ -1,6 +1,7 @@
 package com.luzdorefugio.service;
 
 import com.luzdorefugio.domain.ContactMessage;
+import com.luzdorefugio.dto.admin.ContactResponse;
 import com.luzdorefugio.repository.ContactMessageRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -20,20 +21,21 @@ public class ContactService {
     private final NotificationService notificationService; // Aquele que cria o email
 
     @Transactional // Garante que tudo acontece ou nada acontece
-    public ContactMessage createContact(ContactMessage message) {
+    public ContactResponse createContact(ContactMessage message) {
         ContactMessage saved = repository.save(message);
         try {
-            //notificationService.sendAdminNotification(saved);
-            //notificationService.sendClientConfirmation(saved.getEmail(), saved.getName());
+            notificationService.sendContactAdminNotification(saved);
+            notificationService.sendContactClientConfirmation(saved.getEmail(), saved.getName());
         } catch (Exception e) {
             logger.error("Aviso: Falha ao enviar email de contacto: {}", e.getMessage());
         }
-
-        return saved;
+        return mapToResponse(saved);
     }
 
-    public List<ContactMessage> getAllMessages() {
-        return repository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+    public List<ContactResponse> getAllMessages() {
+        return repository.findAll(Sort.by(Sort.Direction.DESC, "createdAt")).stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
     public void markAsRead(UUID id) {
@@ -41,5 +43,17 @@ public class ContactService {
             msg.setRead(true);
             repository.save(msg);
         });
+    }
+
+    private ContactResponse mapToResponse(ContactMessage cm) {
+        return new ContactResponse(
+                cm.getId(),
+                cm.getName(),
+                cm.getEmail(),
+                cm.getMessage(),
+                cm.isRead(),
+                cm.getCreatedBy(),
+                cm.getCreatedAt()
+        );
     }
 }

@@ -7,8 +7,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
 import org.hibernate.annotations.UuidGenerator;
-
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity

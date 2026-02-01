@@ -142,7 +142,7 @@ INSERT INTO product_stock (id, quantity_on_hand, product_id) VALUES
      (gen_random_uuid(),15, (SELECT id FROM products WHERE sku = 'VEL_FOZ')),
      (gen_random_uuid(), 15, (SELECT id FROM products WHERE sku = 'VEL_PISTACHO')),
      (gen_random_uuid(),15 , (SELECT id FROM products WHERE sku = 'VEL_AMBROSIA')),
-     (gen_random_uuid(),2 , (SELECT id FROM products WHERE sku = 'VEL_CORACAO')),
+     (gen_random_uuid(),10 , (SELECT id FROM products WHERE sku = 'VEL_CORACAO')),
      (gen_random_uuid(),0 , (SELECT id FROM products WHERE sku = 'VEL_PINH-NATAL')),
      (gen_random_uuid(), 20, (SELECT id FROM products WHERE sku = 'VEL_VALENTI_01')),
      (gen_random_uuid(), 20, (SELECT id FROM products WHERE sku = 'VEL_VALENTI_02'));

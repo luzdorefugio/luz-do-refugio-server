@@ -29,6 +29,9 @@ public class EmailService {
     private String senderEmail;
 
     public void sendEmail(String toEmail, String subject, String content) {
+        if (toEmail.isEmpty()) {
+            return;
+        }
         try {
             // 1. Headers (Autenticação)
             HttpHeaders headers = new HttpHeaders();

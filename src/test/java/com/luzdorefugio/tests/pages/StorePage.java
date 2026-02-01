@@ -36,7 +36,7 @@ public class StorePage {
         // Filtra para encontrar o primeiro botão visível que diz "VER PACK"
         // (Lógica simplificada para exemplo)
         if(!buttons.isEmpty()) {
-            buttons.get(0).click();
+            buttons.getFirst().click();
         }
     }
 }

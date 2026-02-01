@@ -10,9 +10,6 @@ import com.luzdorefugio.dto.admin.InboundRequest;
 import com.luzdorefugio.dto.admin.RestockRequest;
 import com.luzdorefugio.exception.BusinessException;
 import com.luzdorefugio.repository.*;
-import com.luzdorefugio.repository.MaterialRepository;
-import com.luzdorefugio.repository.StockMovementRepository;
-import com.luzdorefugio.repository.StockRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
