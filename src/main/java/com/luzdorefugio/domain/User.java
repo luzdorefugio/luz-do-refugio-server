@@ -1,5 +1,6 @@
 package com.luzdorefugio.domain;
 
+import com.luzdorefugio.domain.base.Auditable;
 import com.luzdorefugio.domain.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -21,7 +22,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Entity
 @Table(name = "users") // Postgres não gosta da tabela chamada "user", por isso usamos "_user"
-public class User implements UserDetails {
+public class User extends Auditable implements UserDetails  {
     @Id
     @UuidGenerator
     private UUID id;
@@ -36,6 +37,7 @@ public class User implements UserDetails {
     private String address;
     private String city;
     private String zipCode;
+    private boolean active;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

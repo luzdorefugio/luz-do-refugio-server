@@ -10,4 +10,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     // Método mágico do Spring Data JPA
     Optional<User> findByEmail(String email);
 
+    long countByActiveTrue();
+
 }

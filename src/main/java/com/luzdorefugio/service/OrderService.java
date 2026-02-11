@@ -94,7 +94,7 @@ public class OrderService {
                 .appliedPromotionCode(request.getAppliedPromotionCode())
                 .discountAmount(request.getDiscountAmount())
                 .channel(request.getChannel())
-                .status(OrderStatus.PENDING);
+                .status(request.getStatus());
 
         // 4. Lógica de GIFT (Só preenche se o objeto existir)
         if (request.getGiftDetails() != null && Boolean.TRUE.equals(request.getGiftDetails().getIsGift())) {
@@ -148,6 +148,14 @@ public class OrderService {
             promotionService.incrementUsage(order.getAppliedPromotionCode());
         }
 
+        if (savedOrder.getStatus() == OrderStatus.PAID || savedOrder.getStatus() == OrderStatus.DELIVERED) {
+            financialService.registerRevenue(
+                    savedOrder.getTotalAmount(),
+                    savedOrder.getId().toString(),
+                    savedOrder.getCustomerName()
+            );
+        }
+
         // Telegram - Se for gift, podes querer avisar no Telegram que é para oferta!
         new Thread(() -> {
             String alertMsg = savedOrder.getIsGift() ? "🎁 NOVA OFERTA VENDIDA!" : "NOVA VENDA!";
@@ -159,11 +167,24 @@ public class OrderService {
         }).start();
 
         // Email de Confirmação
-        notificationService.sendOrderConfirmation(
-                savedOrder.getCustomerEmail(),
-                savedOrder.getCustomerName(),
-                savedOrder.getId(),
-                savedOrder.getTotalAmount());
+        if (savedOrder.getStatus() == OrderStatus.PENDING) {
+            notificationService.sendOrderConfirmation(
+                    savedOrder.getCustomerEmail(),
+                    savedOrder.getCustomerName(),
+                    savedOrder.getId(),
+                    savedOrder.getTotalAmount()
+            );
+        } else {
+            // Se for PAID ou DELIVERED, envia o Recibo adaptado
+            notificationService.sendOrderPaidReceipt(
+                    savedOrder.getCustomerEmail(),
+                    savedOrder.getCustomerName(),
+                    savedOrder.getId(),
+                    savedOrder.getTotalAmount(),
+                    savedOrder.getStatus() // <--- Passamos o estado aqui
+            );
+        }
+
 
         return mapToResponse(savedOrder);
     }

@@ -6,5 +6,6 @@ public enum OrderChannel {
     FACEBOOK,
     BASKET,
     MARKET_STALL,
+    RESELL,
     DIRECT
 }

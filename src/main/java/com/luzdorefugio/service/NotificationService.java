@@ -47,6 +47,44 @@ public class NotificationService {
     }
 
     @Async
+    public void sendOrderPaidReceipt(String toEmail, String customerName, UUID orderId, BigDecimal total, OrderStatus status) {
+        if (toEmail == null) return;
+
+        String shortId = orderId.toString().substring(0, 8);
+        logger.info("A enviar recibo ({}) da encomenda #{} para {}", status, shortId, toEmail);
+
+        String linkConta = "https://luzdorefugio.pt/loja/minha-conta";
+        String subject = "Recibo da tua compra 🧾 #" + shortId;
+
+        // Texto dinâmico
+        String statusMessage;
+        String statusColor;
+
+        if (status == OrderStatus.DELIVERED) {
+            statusMessage = "✅ <strong>Paga e Entregue</strong><br>Obrigado pela visita à nossa banca! Esperamos que gostes.";
+            statusColor = "#27ae60"; // Verde
+        } else {
+            // PAID
+            statusMessage = "✅ <strong>Pagamento Confirmado</strong><br>A tua encomenda será preparada para envio/levantamento brevemente.";
+            statusColor = "#2980b9"; // Azul
+        }
+
+        String content = String.format("""
+            <p>Olá %s,</p>
+            <p>Obrigado pela tua compra! ✨</p>
+            <p>Este email serve como confirmação de que a encomenda <strong>#%s</strong> (%.2f€) foi registada com sucesso.</p>
+            
+            <div style="background-color: #f0fdf4; border-left: 4px solid %s; padding: 15px; margin: 20px 0; color: #333;">
+                %s
+            </div>
+            
+            <p>Esperamos que os nossos produtos tragam muita luz ao teu espaço!</p>
+            """, customerName, shortId, total, statusColor, statusMessage);
+
+        sendHtmlEmail(toEmail, subject, content, "Ver na Área de Cliente", linkConta);
+    }
+
+    @Async
     public void sendContactClientConfirmation(String toEmail, String name) {
         if (toEmail == null) return;
         logger.info("A enviar confirmação de receção de contacto para: {}", toEmail);
