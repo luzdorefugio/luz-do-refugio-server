@@ -3,7 +3,7 @@ name: Backup Base de Dados (Semanal)
 on:
   schedule:
     - cron: '0 23 * * 6'
-  workflow_dispatch: # Permite testar manualmente na branch 'backup-test'
+  workflow_dispatch:
 
 jobs:
   backup_database:
@@ -13,28 +13,25 @@ jobs:
     steps:
       - name: Instalar Cliente Postgres
         run: |
-          # Instalamos a versão 16 para garantir compatibilidade com as DBs modernas
           sudo apt-get update
           sudo apt-get install -y postgresql-client-16
 
       - name: Criar e Comprimir Backup
         env:
-          # Garante que o Secret está bem definido no GitHub
           PG_URL: ${{ secrets.RAILWAY_DB_URL }}
         run: |
-          echo "🚀 A iniciar backup remoto da Railway..."
+          echo "🚀 A iniciar backup..."
           
-          # 1. Usamos aspas duplas para proteger a string
-          # 2. Adicionamos flags explícitas para evitar o erro de socket
-          # 3. O pg_dump com a flag --dbname ignora o socket se a URL tiver o host
+          # Se o PG_URL não estiver definido, o script pára aqui
+          if [ -z "$PG_URL" ]; then
+            echo "❌ ERRO: Secret RAILWAY_DB_URL não configurado!"
+            exit 1
+          fi
+
+          # O comando pg_dump numa única linha para evitar erros de escape
+          pg_dump "$PG_URL" --no-owner --no-privileges --clean | gzip > backup_luz_refugio_$(date +%Y-%m-%d).sql.gz
           
-          pg_dump --dbname="$PG_URL" \
-                  --no-owner \
-                  --no-privileges \
-                  --clean \
-                  --if-exists | gzip > backup_luz_refugio_$(date +%Y-%m-%d).sql.gz
-          
-          echo "✅ Backup concluído e comprimido."
+          echo "✅ Backup concluído."
 
       - name: Guardar Backup no GitHub (Artifacts)
         uses: actions/upload-artifact@v4
