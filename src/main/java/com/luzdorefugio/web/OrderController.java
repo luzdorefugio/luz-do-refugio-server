@@ -56,7 +56,7 @@ public class OrderController {
 
     @PostMapping("/admin/orders")
     public ResponseEntity<OrderResponse> createAdminOrder(@RequestBody OrderRequest request) {
-        return ResponseEntity.ok(service.createOrder(request));
+        return ResponseEntity.ok(service.createOrder(request, false));
     }
 
     @GetMapping("/admin/orders")

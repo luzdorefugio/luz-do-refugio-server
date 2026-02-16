@@ -54,11 +54,11 @@ public class OrderService {
     public OrderResponse createOrderShop(OrderRequest request) {
         request.setStatus(OrderStatus.PENDING);
         request.setChannel(WEBSITE);
-        return createOrder(request);
+        return createOrder(request, true);
     }
 
     // 1. CRIAR ENCOMENDA
-    public OrderResponse createOrder(OrderRequest request) {
+    public OrderResponse createOrder(OrderRequest request, boolean shop) {
 
         // 2. Extrair Moradas (Null Safety é importante)
         var shippingAddr = request.getCustomer().getShippingAddress();
@@ -156,16 +156,17 @@ public class OrderService {
             );
         }
 
-        // Telegram - Se for gift, podes querer avisar no Telegram que é para oferta!
-        new Thread(() -> {
-            String alertMsg = savedOrder.getIsGift() ? "🎁 NOVA OFERTA VENDIDA!" : "NOVA VENDA!";
-            telegramService.enviarAlertaVenda(
-                    alertMsg + " ID: " + savedOrder.getId().toString(),
-                    savedOrder.getTotalAmount().doubleValue(),
-                    savedOrder.getCustomerName()
-            );
-        }).start();
-
+        if(shop) {
+            // Telegram - Se for gift, podes querer avisar no Telegram que é para oferta!
+            new Thread(() -> {
+                String alertMsg = savedOrder.getIsGift() ? "🎁 NOVA OFERTA VENDIDA!" : "NOVA VENDA!";
+                telegramService.enviarAlertaVenda(
+                        alertMsg + " ID: " + savedOrder.getId().toString(),
+                        savedOrder.getTotalAmount().doubleValue(),
+                        savedOrder.getCustomerName()
+                );
+            }).start();
+        }
         // Email de Confirmação
         if (savedOrder.getStatus() == OrderStatus.PENDING) {
             notificationService.sendOrderConfirmation(
