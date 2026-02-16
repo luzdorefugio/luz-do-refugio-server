@@ -24,10 +24,10 @@ jobs:
           # Esta variável vai buscar o valor que definires nos Settings do GitHub
           PG_CONNECTION_STRING: ${{ secrets.RAILWAY_DB_URL }}
         run: |
-          echo "A iniciar backup..."
-          # O comando pg_dump extrai os dados e o gzip comprime para ocupar menos espaço
-          pg_dump "$PG_CONNECTION_STRING" | gzip > backup_luz_refugio_$(date +%Y-%m-%d).sql.gz
-          echo "Backup concluído com sucesso."
+          echo "A iniciar backup da Railway..."
+          # Usamos a flag --dbname para passar a string completa (host, user, pass, db)
+          pg_dump --dbname="$PG_CONNECTION_STRING" | gzip > backup_luz_refugio_$(date +%Y-%m-%d).sql.gz
+          echo "Backup concluído."
 
       - name: Guardar Backup no GitHub (Artifacts)
         uses: actions/upload-artifact@v4
